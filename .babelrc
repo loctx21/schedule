@@ -1,0 +1,35 @@
+{
+    "env": {
+      "test": {
+        "presets": [
+          ["react-app", {
+            "targets": {
+              "node": "current"
+            }
+          }]
+        ]
+      },
+      "development": {
+        "presets": [
+          ["react-app", {
+            "modules": false,
+            "targets": {
+              "browsers": "> 2%",
+              "uglify": true
+            }
+          }]
+        ]
+      },
+      "production": {
+        "presets": [
+          ["react-app", {
+            "modules": false,
+            "targets": {
+              "browsers": "> 2%",
+              "uglify": true
+            }
+          }]
+        ]
+      }
+    }
+  }

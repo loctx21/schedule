@@ -14,7 +14,7 @@ class AddPageManagement extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->text('fb_access_token');
+            $table->text('fb_access_token')->nullable();
         });
 
         Schema::create('pages', function (Blueprint $table) {
@@ -30,6 +30,7 @@ class AddPageManagement extends Migration
             $table->text('message_reply_tmpl')->nullable();
             $table->text('post_reply_tmpl')->nullable();
             $table->string('schedule_time')->nullable();
+            $table->string('status')->default(0);
             $table->timestamps();
         });
 
@@ -52,7 +53,10 @@ class AddPageManagement extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pages');
         Schema::dropIfExists('page_user');
+        Schema::dropIfExists('pages');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('fb_access_token');
+        });
     }
 }
