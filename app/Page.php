@@ -2,18 +2,23 @@
 
 namespace App;
 
+use App\Helper\Utils;
 use Illuminate\Database\Eloquent\Model;
 
 class Page extends Model
 {
+    const CONV_INDEX_ENABLED = 1;
+    const CONV_INDEX_DISABLED = 2;
+
     /**
      * The attributes that are mass assignable
      * 
      * @var array
      */
-    protected $fillable = ['name','fb_id','def_fb_album_id','access_token','timezone','index_message','message_reply_tmpl','post_reply_tmpl','schedule_time'];
+    protected $fillable = ['name','fb_id','def_fb_album_id','access_token','timezone',
+        'message_reply_tmpl','post_reply_tmpl','schedule_time'];
 
-    protected $appends = ['schedule_option'];
+    protected $appends = ['schedule_option', 'timezone_gmt'];
 
     /**
      * The users that manage this page
@@ -41,5 +46,19 @@ class Page extends Model
                 'm' => $timeData[1] 
             ];
         })->toArray();
+    }
+
+    /**
+     * Get page timezone string
+     * 
+     * @return string
+     */
+    public function getTimezoneGmtAttribute() {
+        $timezones = Utils::getTimezoneArr();
+        foreach ($timezones as $timezone) {
+            if ($timezone['zone'] == $this->timezone)
+                return $timezone['diff_from_GMT'];
+        }
+        return '';
     }
 }

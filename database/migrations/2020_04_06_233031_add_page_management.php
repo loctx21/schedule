@@ -19,8 +19,8 @@ class AddPageManagement extends Migration
 
         Schema::create('pages', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('fb_id')->index();
-            $table->unsignedBigInteger('def_fb_album_id')->index();
+            $table->unsignedBigInteger('fb_id')->unique()->index();
+            $table->unsignedBigInteger('def_fb_album_id')->nullable()->index();
             $table->string('name');
             $table->text('access_token')->nullable();
             $table->integer('likes')->default(0);
