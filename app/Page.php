@@ -53,12 +53,33 @@ class Page extends Model
      * 
      * @return string
      */
-    public function getTimezoneGmtAttribute() {
+    public function getTimezoneGmtAttribute() 
+    {
         $timezones = Utils::getTimezoneArr();
         foreach ($timezones as $timezone) {
             if ($timezone['zone'] == $this->timezone)
                 return $timezone['diff_from_GMT'];
         }
         return '';
+    }
+
+    /**
+     * Get page image directory path
+     * 
+     * @return string
+     */
+    public function getImageDirPath()
+    {
+        return "page/{$this->id}/photo";
+    }
+
+    /**
+     * Get page image directory path
+     * 
+     * @return string
+     */
+    public function getVideoDirPath()
+    {
+        return "page/{$this->id}/video";
     }
 }

@@ -19,5 +19,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::post('/page', 'PageController@create');
+
+    Route::post('/post', 'PostController@create');
 });
 

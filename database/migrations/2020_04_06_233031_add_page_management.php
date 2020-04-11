@@ -1,5 +1,6 @@
 <?php
 
+use App\Comment;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -20,6 +21,7 @@ class AddPageManagement extends Migration
         Schema::create('pages', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('fb_id')->unique()->index();
+            $table->unsignedBigInteger('user_ud')->index();
             $table->unsignedBigInteger('def_fb_album_id')->nullable()->index();
             $table->string('name');
             $table->text('access_token')->nullable();
@@ -32,6 +34,8 @@ class AddPageManagement extends Migration
             $table->string('schedule_time')->nullable();
             $table->string('status')->default(0);
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users');
         });
 
         Schema::create('page_user', function (Blueprint $table) {
