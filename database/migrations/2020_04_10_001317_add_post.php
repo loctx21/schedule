@@ -20,6 +20,7 @@ class AddPost extends Migration
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('page_id')->index();
             $table->unsignedBigInteger('fb_id')->nullable()->index();
+            $table->unsignedBigInteger('fb_post_id')->nullable()->index();
             $table->unsignedBigInteger('fb_album_id')->nullable()->index();
             $table->tinyInteger('status')->default(Post::STATUS_NOT_PUBLISH);
             $table->string('media_url', 2083)->nullable();
@@ -28,6 +29,7 @@ class AddPost extends Migration
             $table->string('video_title')->nullable();            
             $table->timestamp('scheduled_at')->nullable();
             $table->timestamp('published_at')->nullable();
+            $table->string('target_url')->nullable();
             $table->timestamps();
 
             $table->collation = 'utf8mb4_unicode_ci';

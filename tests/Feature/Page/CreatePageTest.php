@@ -1,7 +1,8 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Page;
 
+use App\Page;
 use App\User;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -71,17 +72,25 @@ class CreatePageTest extends TestCase
         $user = factory(User::class)->create();
         Passport::actingAs($user, ['*']);
 
-        $response = $this->json('POST', '/api/page', [
+        $data =  [
             'name'  => 'test',
             'access_token' => 'adasdadad',
-            'fb_id' => 123
-        ]);
+            'fb_id' => $this->getUniqueFbId()
+        ];
+        $response = $this->json('POST', '/api/page', $data);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('pages', [
-            'fb_id' => 123,
-            'name'  => 'test'
+            'fb_id' => $data['fb_id'],
+            'name'  => $data['name']
         ]);
-        $response->assertJsonFragment(['fb_id' => 123, 'name' => 'test']);
+        $this->assertEquals($user->pages()->count(), 1);
+        $response->assertJsonFragment(['fb_id' => $data['fb_id'], 'name' => $data['name']]);
+    }
+
+    public function getUniqueFbId()
+    {
+        $page = Page::orderBy('id', 'DESC')->first();
+        return $page ? $page->fb_id + 1 : 123;
     }
 }

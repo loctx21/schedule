@@ -20,9 +20,6 @@ class PageModal extends Component {
             modal : true,
             pages : []
         }
-        
-        this.toggle = this.toggle.bind(this)
-        this.handleSubmit = this.handleSubmit.bind(this)
     }
 
     render() {
@@ -35,7 +32,7 @@ class PageModal extends Component {
                 <Formik
                     validationSchema={PageSchema}
                     onSubmit={this.handleSubmit}
-                    initialValues={{ page: '' }}
+                    initialValues={{ page : ""}}
                 >
                 {({ errors, touched }) => (
                     <Form>
@@ -43,19 +40,19 @@ class PageModal extends Component {
                             <Field as="select" 
                                 name="page" 
                                 data-testid="page_select"
-                                placeholder="Choose page to integrate"
                             >
-                            {this.state.pages.map(item => (
-                                <option key={item.id} value={item.id}>{item.name}</option>
-                            ))}
+                                <option value="">Choose page</option>
+                                {this.state.pages.map(item => (
+                                    <option key={item.id} value={item.id}>{item.name}</option>
+                                ))}
                             </Field>
                             <ErrorMessage name="page" />
                         </ModalBody>
                         <ModalFooter>
                             <div className="text-right">
-                                <button type="submit">
+                                <Button type="submit" color="primary">
                                     Add
-                                </button>
+                                </Button>
                             </div>
                         </ModalFooter>
                     </Form>
@@ -71,7 +68,7 @@ class PageModal extends Component {
         })
     }
     
-    handleSubmit(values, actions) {
+    handleSubmit = (values, actions) => {
         const page = this.state.pages.filter(item => item.id == values.page)[0]
         this.props.onSubmit(page)
         

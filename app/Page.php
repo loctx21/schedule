@@ -8,24 +8,29 @@ use Illuminate\Database\Eloquent\Model;
 class Page extends Model
 {
     const CONV_INDEX_ENABLED = 1;
-    const CONV_INDEX_DISABLED = 2;
-
+    const CONV_INDEX_DISABLED = 0;
+    
     /**
      * The attributes that are mass assignable
      * 
      * @var array
      */
     protected $fillable = ['name','fb_id','def_fb_album_id','access_token','timezone',
-        'message_reply_tmpl','post_reply_tmpl','schedule_time'];
+        'message_reply_tmpl','post_reply_tmpl','schedule_time', 'conv_index'];
 
     protected $appends = ['schedule_option', 'timezone_gmt'];
 
     /**
      * The users that manage this page
      */
-    public function users()
+    public function users() 
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsToMany('App\User')->withTimestamps();
+    }
+
+    public function posts() 
+    {
+        return $this->hasMany('App\Post');
     }
 
     /**

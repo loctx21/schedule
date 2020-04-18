@@ -13,3 +13,5 @@ require('./bootstrap');
  */
 
 require('./components/Dashboard/Index');
+require('./components/Post/Index');
+require('./components/Page/Edit');

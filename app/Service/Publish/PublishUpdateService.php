@@ -3,12 +3,11 @@
 namespace App\Service\Publish;
 
 use App\Comment;
-use App\Page;
 use App\Post;
 use App\Reply;
 use Illuminate\Support\Facades\Auth;
 
-class PublishEditService extends AbstractPublish
+class PublishUpdateService extends AbstractPublish
 {
 
     /**
@@ -16,8 +15,9 @@ class PublishEditService extends AbstractPublish
      */
     protected $post;
     
-    public function __construct($data, Page $page, Post $post)
-    {
+    public function __construct($data, Post $post)
+    {   
+        $page = $post->page;
         parent::__construct($data, $page);
         $this->post = $post;
     }
@@ -30,8 +30,11 @@ class PublishEditService extends AbstractPublish
         $data = $this->getPostInfo();
         $data['user_id'] = Auth::user()->id;
         $data['page_id'] = $this->page->id;
+        
         $this->post->fill($data);
+        $this->post->save();
 
+        $this->post->scheduled_at_tz = $this->post->getScheduledAtTimezone($this->page->timezone);
         $this->post->comment = $this->saveComment();
         $this->post->reply = $this->saveReply();
 
@@ -72,19 +75,24 @@ class PublishEditService extends AbstractPublish
     protected function saveReply()
     {
         $reply = $this->post->replies()->first();
-
-        if (empty($this->data['reply_message']))
-            return $reply;
         
-        if (!$reply)
-            $reply = new Reply;
+        if (!$reply) {
+            if (empty($this->data['reply_message']))
+                return null;
 
+            if (empty($this->data['target_url']))
+                return null;
+
+            $reply = new Reply;
+        }
+            
         $reply->fill([
-            'message'   => $this->data['reply_message'],
+            'message'   => array_key_exists('reply_message', $this->data) ? $this->data['reply_message'] : "",
             'post_id'   => $this->post->id,
             'user_id'   => Auth::id(),
             'page_id'   => $this->page->id,
-            'fb_target_id' => $this->data['fb_target_id']
+            'type'      => $this->extractReplyType(),
+            'fb_target_id' => $this->extractReplyTargetId()
         ]);
         $reply->save();
 

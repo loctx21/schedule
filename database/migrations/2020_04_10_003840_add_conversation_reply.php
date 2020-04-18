@@ -18,7 +18,8 @@ class AddConversationReply extends Migration
             $table->bigIncrements('id');
             $table->text('message');
             $table->tinyInteger('status')->default(Reply::STATUS_NOT_PUBLISH);
-            $table->string('fb_target_id');
+            $table->tinyInteger('type');
+            $table->string('fb_target_id')->nullable();
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('page_id')->index();
             $table->unsignedBigInteger('post_id')->index();
@@ -27,7 +28,8 @@ class AddConversationReply extends Migration
 
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('page_id')->references('id')->on('pages');
-            $table->foreign('post_id')->references('id')->on('posts');
+            $table->foreign('post_id')
+                ->references('id')->on('posts')->onDelete('cascade');
         });
     }
 

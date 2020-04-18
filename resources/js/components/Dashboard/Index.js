@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
-import { Facebook, Trash2 } from 'react-feather'
+import { Facebook, Plus ,Trash2 } from 'react-feather'
 import { Button } from 'reactstrap'
 import PageModal from './PageModal'
 
@@ -18,7 +18,7 @@ class DashboardIndex extends Component {
     render() {
         const { fb_logined, fb_login_url } = this.props
         const { pages } = this.state
-
+        
         return (    
             <div className="container">
                 <div className="text-center mb-3">
@@ -27,10 +27,10 @@ class DashboardIndex extends Component {
                         {fb_logined ? 'Refresh Token' : 'Login to Facebook'}
                     </a>
                     {fb_logined &&
-                    <a className="btn btn-default" href=""
+                    <a className="btn btn-default" href="#"
                         onClick={() => this.setState({page_modal: true})}
                     >
-                        <Facebook /> Add Fanpages
+                        <Plus /> Add Fanpages
                     </a> }
                 </div>
 
@@ -43,6 +43,7 @@ class DashboardIndex extends Component {
                             <table className="table">
                                 <thead>
                                     <tr>
+                                        <th scope="col">&nbsp;</th>
                                         <th scope="col">Page</th>
                                         <th scope="col">Facebook ID</th>
                                         <th scope="col">Timezone</th>
@@ -50,13 +51,22 @@ class DashboardIndex extends Component {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {pages.map(item => (
-                                        <tr key={item.id}>
-                                            <th scope="row">{item.name}</th>
-                                            <td>{item.fb_id}</td>
-                                            <td>{item.timezone_gmt}</td>
+                                    {pages.map(page => (
+                                        <tr key={page.id}>
+                                            <th scope="row">
+                                                <img className="fb-s-logo" src={`http://graph.facebook.com/${page.fb_id}/picture?type=square`}/>
+                                            </th>
+                                            <th>
+                                                <a href={`page/${page.id}/post`}>
+                                                    {page.name}
+                                                </a>
+                                            </th>
+                                            <td>{page.fb_id}</td>
+                                            <td>{page.timezone_gmt}</td>
                                             <td>
-                                                <a className="btn" href={`/page/${item.id}/edit`}>Edit</a>
+                                                <a className="btn" href={`/page/${page.id}/edit`}>
+                                                    Edit
+                                                </a>
                                                 <Button color="danger">
                                                     <Trash2/> Delete
                                                 </Button>
@@ -82,6 +92,7 @@ class DashboardIndex extends Component {
     }
 
     handleAddFanpage = (page) => {
+        page.fb_id = page.id
         addManagedFanpage(page)
             .then(page => {
                 let pages = this.state.pages.slice(0)
@@ -89,6 +100,8 @@ class DashboardIndex extends Component {
                 this.setState({pages})
             })
     }
+
+    componentDidMount() {}
 }
 
 DashboardIndex.propTypes = {
@@ -103,5 +116,6 @@ if (document.getElementById('dashboard_index')) {
         <DashboardIndex 
             fb_login_url={fb_login_url}
             fb_logined={fb_logined}
+            pages={window.pages}
         />, document.getElementById('dashboard_index'));
 }

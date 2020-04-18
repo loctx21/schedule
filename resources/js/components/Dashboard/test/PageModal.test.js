@@ -37,10 +37,10 @@ it("help user select page to integrate", async () => {
     
     await waitFor(() => expect(getManagementFacebookPage).toHaveBeenCalledTimes(1))
     expect(queryByText("Test fanpage")).toBeTruthy()
-    await waitFor(() => {
+
+    await waitFor(() => {    
         fireEvent.click(getByText('Add'))
     })
-    
     expect(queryByText('Required')).toBeTruthy()
     await act(async () => {
         fireEvent.change(getByTestId('page_select'), {target : {value:"107990999551143"}})

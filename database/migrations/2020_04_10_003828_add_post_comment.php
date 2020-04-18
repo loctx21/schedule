@@ -20,13 +20,12 @@ class AddPostComment extends Migration
             $table->tinyInteger('status')->default(Comment::STATUS_NOT_PUBLISH);
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('post_id')->index();
-            $table->unsignedBigInteger('page_id')->index();
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('post_id')->references('id')->on('posts');
-            $table->foreign('page_id')->references('id')->on('pages');
+            $table->foreign('post_id')
+                ->references('id')->on('posts')->onDelete('cascade');
         });
     }
 

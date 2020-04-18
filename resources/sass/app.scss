@@ -6,3 +6,47 @@
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
+
+.post-list {
+    img {
+        max-height: 150px;
+        max-width: 150px;
+    }
+}
+
+
+.agenda {
+    width: 170px;
+    
+    .dayofmonth {
+        width: 40px;
+        font-size: 33px;
+        line-height: 36px;
+        float: left;
+        text-align: right;
+        margin-right: 10px; 
+    }
+    
+    .shortdate {
+        font-size: 0.75em;
+    }
+}
+
+.fb-s-logo {
+    width: 45px;
+}
+
+.action-ctrl {
+    button {
+        margin-right: $gutter;
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+    .loader {
+        display: inline-block;
+        margin-right: $gutter * 6;
+        font-size: 5px;
+        vertical-align: top;
+    }
+}

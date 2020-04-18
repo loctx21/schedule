@@ -34,7 +34,9 @@ class DashboardController extends Controller
 
         JavaScript::put([
             'fb_logined' => !empty($user->fb_access_token),
-            'fb_login_url' => $loginUrl
+            'fb_login_url' => $loginUrl,
+            'pages' => $user->pages,
+            'app_id' => config('facebook.app_id')
         ]);
 
         return view('dashboard.index');

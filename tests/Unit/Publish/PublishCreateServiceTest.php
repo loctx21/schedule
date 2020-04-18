@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Publish;
+namespace Tests\Unit\Publish;
 
 use App\Comment;
 use App\Page;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
 
-class CreatePublishServiceTest extends TestCase
+class PublishCreateServiceTest extends TestCase
 {
 
     protected function tearDown(): void
@@ -41,11 +41,13 @@ class CreatePublishServiceTest extends TestCase
         $publishCreateService = new PublishCreateService($data, $page);
         $photoData = $publishCreateService->getPostInfo();
 
-        $this->assertEquals($photoData, [
+        $this->assertArraySubset([
+            'target_url' => '',
             'message'  => 'test photo message',
             'type'  => Post::TYPE_PHOTO_ID,
             'media_url'  => "page/{$page->id}/photo/image.png"
-        ]);
+        ], $photoData);
+        $this->assertNotNull($photoData['scheduled_at']);
     }
 
     public function testGetPublishLaterPhotoPostUrlInfo()
@@ -56,18 +58,20 @@ class CreatePublishServiceTest extends TestCase
             'message'  => 'test photo message',
             'post_type' => 'photo',
             'asset_mode' => 'url',
-            'url' => 'https://google.com/a.png',
+            'media_url' => 'https://google.com/a.png',
             'post_mode' => 'now'
         ];
 
         $publishCreateService = new PublishCreateService($data, $page);
         $photoData = $publishCreateService->getPostInfo();
 
-        $this->assertEquals($photoData, [
+        $this->assertArraySubset([
+            'target_url' => '',
             'message'  => 'test photo message',
             'type'  => Post::TYPE_PHOTO_ID,
             'media_url'  => 'https://google.com/a.png'
-        ]);
+        ], $photoData);
+        $this->assertNotNull($photoData['scheduled_at']);
     }
 
     public function testGetPostNowInfo()
@@ -80,7 +84,7 @@ class CreatePublishServiceTest extends TestCase
         $publishCreateService = new PublishCreateService($data, $page);
         $photoData = $publishCreateService->getPostScheduleInfo();
 
-        $this->assertEquals($photoData, []);
+        $this->assertNotNull($photoData['scheduled_at']);
     }
 
     public function testGetPublishNowVideoPostFileInfo()
@@ -100,11 +104,13 @@ class CreatePublishServiceTest extends TestCase
         $publishCreateService = new PublishCreateService($data, $page);
         $photoData = $publishCreateService->getPostInfo();
 
-        $this->assertEquals($photoData, [
+        $this->assertArraySubset([
+            'target_url' => '',
             'message'  => 'test video message',
             'type'  => Post::TYPE_VIDEO_ID,
             'media_url'  => "page/{$page->id}/video/video.mp4"
-        ]);
+        ], $photoData);
+        $this->assertNotNull($photoData['scheduled_at']);
     }
 
     public function testGetPublishNowVideoPostUrlInfo()
@@ -115,18 +121,20 @@ class CreatePublishServiceTest extends TestCase
             'message'  => 'test video message',
             'post_type' => 'video',
             'asset_mode' => 'url',
-            'url' => 'https://google.com/a.mp4',
+            'media_url' => 'https://google.com/a.mp4',
             'post_mode' => 'now'
         ];
 
         $publishCreateService = new PublishCreateService($data, $page);
         $photoData = $publishCreateService->getPostInfo();
 
-        $this->assertEquals($photoData, [
+        $this->assertArraySubset([
+            'target_url' => '',
             'message'  => 'test video message',
             'type'  => Post::TYPE_VIDEO_ID,
             'media_url'  => "https://google.com/a.mp4"
-        ]);
+        ], $photoData);
+        $this->assertNotNull($photoData['scheduled_at']);
     }
 
     public function testGetPostScheduleLaterInfo()
@@ -136,7 +144,7 @@ class CreatePublishServiceTest extends TestCase
             'post_mode' => 'schedule',
             'date' => '2020-04-13',
             'time_hour' => 10,
-            'time_minute' => "00"
+            'time_minute' => 0
         ];
 
         $publishCreateService = new PublishCreateService($data, $page);
@@ -174,8 +182,8 @@ class CreatePublishServiceTest extends TestCase
 
         $data = [ 
             'post_type' => 'photo',
-            'url' => 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png',
-            'save_file' => 1
+            'media_url' => 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png',
+            'save_file' => "true"
         ];
 
         $publishCreateService = new PublishCreateService($data, $page);
@@ -199,11 +207,12 @@ class CreatePublishServiceTest extends TestCase
         $publishCreateService = new PublishCreateService($data, $page);
         $photoData = $publishCreateService->getPostInfo();
 
-        $this->assertEquals($photoData, [
+        $this->assertArraySubset([
+            'target_url' => '',
             'message'  => 'test photo message',
             'type'  => Post::TYPE_LINK_ID,
             'link'  => 'https://google.com/a.png'
-        ]);
+        ], $photoData);
     }
 
     public function testCreatePublishNowPhotoPostFileNoCommenReplyInfo()
@@ -228,7 +237,7 @@ class CreatePublishServiceTest extends TestCase
 
         $this->assertEquals($post->message, 'test photo message');
         $this->assertEquals($post->type, Post::TYPE_PHOTO_ID);
-        $this->assertEquals($post->media_url, "page/{$page->id}/photo/image.png");
+        $this->assertEquals($post->getOriginal('media_url'), "page/{$page->id}/photo/image.png");
         $this->assertEquals($post->user_id, $user->id);
         $this->assertEquals($post->page_id, $page->id);
         
@@ -253,7 +262,7 @@ class CreatePublishServiceTest extends TestCase
             'post_mode' => 'now',
             'comment' => 'This is the comment',
             'reply_message' => 'This is the reply message',
-            'fb_target_id' => 'Loc Nguyen'
+            'target_url' => 'Loc Nguyen'
         ];
 
         $publishCreateService = new PublishCreateService($data, $page);
@@ -261,14 +270,13 @@ class CreatePublishServiceTest extends TestCase
 
         $this->assertEquals($post->message, 'test photo message');
         $this->assertEquals($post->type, Post::TYPE_PHOTO_ID);
-        $this->assertEquals($post->media_url, "page/{$page->id}/photo/image.png");
+        $this->assertEquals($post->getOriginal('media_url'), "page/{$page->id}/photo/image.png");
         $this->assertEquals($post->user_id, $user->id);
         $this->assertEquals($post->page_id, $page->id);
 
         $this->assertEquals($post->comment->message, 'This is the comment');
         $this->assertEquals($post->comment->status, Comment::STATUS_NOT_PUBLISH);
         $this->assertEquals($post->comment->user_id, $user->id);
-        $this->assertEquals($post->comment->page_id, $page->id);
         $this->assertEquals($post->comment->post_id, $post->id);
 
         $this->assertEquals($post->reply->message, 'This is the reply message');

@@ -1,45 +1,26 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Publish;
 
 use Illuminate\Validation\Rule;
-use Illuminate\Foundation\Http\FormRequest;
 
-class CreateUpdatePublish extends FormRequest
-{
+trait TraitRule {
     /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
+     * Get Post rules
+     * 
+     * @return array $rule
      */
-    public function authorize()
+    public function getPostRule()
     {
-        return true;
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
-    {
-        $rules = [
+        return [
             'message' => 'required',
             'asset_mode'  => ['filled', Rule::in(['url', 'file'])],
             'post_type' => ['required', Rule::in(['photo', 'video', 'link'])],
             'post_mode' => ['required', Rule::in(['now', 'schedule'])],
-            'fb_album_id' => 'filled|numeric',
+            'fb_album_id' => 'filled|nullable|numeric',
             'comment' => 'filled|nullable|string',
             'reply_message' => 'filled|nullable|string'
         ];
-
-        $rules = array_merge($rules, $this->getFileUploadRules());
-        $rules = array_merge($rules, $this->getTimePostRules());
-        $rules = array_merge_recursive($rules, $this->getVideoRules());
-        $rules = array_merge($rules, $this->getLinkRules());
-
-        return $rules;
     }
 
     /**
@@ -50,11 +31,14 @@ class CreateUpdatePublish extends FormRequest
     public function getFileUploadRules() {
         $rules = [];
 
+        if ($this->input('post_type') == "link")
+            return $rules;
+
         if ($this->input('asset_mode', null) == null )
-            return [];
+            return $rules;
 
         if ($this->input('asset_mode') === 'url')
-            $rules['url'] = ['required','url'];
+            $rules['media_url'] = ['required','url'];
         else if ($this->input('asset_mode') === 'file'){
             $rules['post_file'] = ['required'];
             if ($this->input('post_type') === 'video')
@@ -80,7 +64,7 @@ class CreateUpdatePublish extends FormRequest
 
         $rules['video_title'] = 'required';
         if ($this->input('asset_mode') === 'url')
-            $rules['url'] = 'regex:/^https?:\/\/[a-z0-9\-]*\.?[a-z0-9]*\.[a-zA-Z0-9\/\-_\.]*\.mp4[\?]?[a-zA-Z=0-9&_\-\.]*$/i';
+            $rules['media_url'] = 'regex:/^https?:\/\/[a-z0-9\-]*\.?[a-z0-9]*\.[a-zA-Z0-9\/\-_\.]*\.mp4[\?]?[a-zA-Z=0-9&_\-\.%]*$/i';
 
         return $rules;
     }

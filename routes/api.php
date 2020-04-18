@@ -19,7 +19,12 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::post('/page', 'PageController@create');
+    Route::put('/page/{page}', 'PageController@update');
 
-    Route::post('/post', 'PostController@create');
+    Route::get('/page/{page}/post', 'PostController@get');
+    Route::post('/page/{page}/post', 'PostController@create');
+    
+    Route::post('/post/{post}', 'PostController@edit');
+    Route::delete('/post/{post}', 'PostController@delete');
 });
 

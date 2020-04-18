@@ -4,7 +4,7 @@
  * Get Promise with FB instance.
  * https://gist.github.com/recca0120/c4fa99a358460e8189ab04907e8e96e4
  * 
- * @return Promise
+ * @return {Promise}
  */
 function getScript() {
     return new Promise((resolve) => {
@@ -15,13 +15,19 @@ function getScript() {
         if (document.getElementById(id))
             return
 
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId            : window.app_id,
+                autoLogAppEvents : true,
+                xfbml            : true,
+                version          : 'v6.0'
+            });
+        };
+        
         const js = document.createElement('script')
         js.id = id
         js.src = 'https://connect.facebook.net/en_US/sdk.js'
         js.addEventListener('load', () => {
-            Object.assign(this, {
-            })
-
             resolve(window.FB)
         })
 
@@ -30,27 +36,11 @@ function getScript() {
     })
 }
 
-/**
- * Initialize Facebook app
- * 
- * @param {*} params 
- * 
- * @return Promise
- */
-function init(params = {}) {
-    return new Promise(async (resolve) => {
-        const FB = await getScript()
-        FB.init(params);
-
-        resolve(FB)
-    })
-}
-
 
 /**
  * Promise get user's facebook login status
  * 
- * @return Promise
+ * @return {Promise}
  */
 function getLoginStatus() {
     return new Promise(async (resolve) => {
@@ -67,7 +57,7 @@ function getLoginStatus() {
  * 
  * @param  {...any} params 
  * 
- * @return Promise
+ * @return {Promise}
  */
 function api(...params) {
     return new Promise(async (resolve) => {
@@ -87,5 +77,5 @@ function api(...params) {
 }
 
 export {
-    init, getLoginStatus, api
+    getLoginStatus, api
 }
