@@ -61,13 +61,16 @@ class FbPostPublishService {
         }
 
         $this->attempt += 1;
-        $resp = $this->fbPublish();
 
-        if ($resp->isError())
-        {
+        try {
+            $resp = $this->fbPublish();
+            if ($resp->isError())
+                throw new \Exception("Unexpected facebook error");
+
+        } catch (\Exception $e) {
             $pageFbService = new PageFacebookService();
             $pageFbService->refreshToken($this->page);
-            
+
             return $this->publish();
         }
 
@@ -104,7 +107,7 @@ class FbPostPublishService {
         $endPoint = $this->getFbEndPoint();
         $data = $this->preparePostData();
 
-        return $this->fb->post($endPoint, $data, $this->page->acccess_token);
+        return $this->fb->post($endPoint, $data, $this->page->access_token);
     }
 
     /**

@@ -60,19 +60,22 @@ class FbCommentPublishService {
         }
         
         $this->attempt += 1;
-        $ret = $this->fb->post($this->getFbEndPoint(), [
-            'message'   => $this->comment->message,
-        ], $this->post->page->access_token);
-        
-        if ($ret->isError())
-        {
+
+        try {
+            $resp = $this->fb->post($this->getFbEndPoint(), [
+                'message'   => $this->comment->message,
+            ], $this->post->page->access_token);
+            
+            if ($resp->isError())
+                throw new \Exception("Unexpected facebook error");
+        } catch (\Exception $e) {
             $pageFbService = new PageFacebookService();
             $pageFbService->refreshToken($this->post->page);
             
             return $this->publish();
         }
 
-        $this->updateFbInfo($ret->getDecodedBody());
+        $this->updateFbInfo($resp->getDecodedBody());
          
         return $this->comment;
     }
@@ -84,7 +87,6 @@ class FbCommentPublishService {
      */
     public function updateFbInfo($decodeBody)
     {
-        $this->fb_post_id   = $decodeBody['post_id'];
         $this->status       = Comment::STATUS_PUBLISHED;
         $this->published_at = Carbon::now()->toDateTimeString();
         

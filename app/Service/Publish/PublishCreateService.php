@@ -3,6 +3,7 @@
 namespace App\Service\Publish;
 
 use App\Comment;
+use App\Page;
 use App\Post;
 use App\Reply;
 use Illuminate\Support\Facades\Auth;
@@ -10,37 +11,30 @@ use Illuminate\Support\Facades\Auth;
 class PublishCreateService extends AbstractPublish
 {
     /**
-     * @inheritdoc
+     * Create a new page's publish updation service
+     * 
+     * @param array $data
+     * @param \App\Page $page
+     * @return void
      */
-    public function save()
+    public function __construct($data, Page $page)
     {   
-        $data = $this->getPostInfo();
-        $data['user_id'] = Auth::user()->id;
-        $data['page_id'] = $this->page->id;
-        
-        $post = Post::create($data);
-        $post = $post->fresh();
-        $post->scheduled_at_tz = $post->getScheduledAtTimezone($this->page->timezone);
-
-        $post->comment = $this->saveComment($post);
-        $post->reply = $this->saveReply($post);
-
-        return $post;
+        $this->page = $page;
+        $this->post = new Post;
+        parent::__construct($data);
     }
 
     /**
-     * Save and return post related comment
-     * 
-     * @return \App\Comment|null
+     * @inheritdoc
      */
-    protected function saveComment(Post $post)
+    protected function saveComment()
     {
         if (empty($this->data['comment']))
             return null;
         
         $comment = Comment::create([
             'message'   => $this->data['comment'],
-            'post_id'   => $post->id,
+            'post_id'   => $this->post->id,
             'user_id'   => Auth::id(),
             'page_id'   => $this->page->id
         ]);
@@ -49,11 +43,9 @@ class PublishCreateService extends AbstractPublish
     }
 
      /**
-     * Save and return post related conversation reply
-     * 
-     * @return \App\Reply|null
+     * @inheritdoc
      */
-    protected function saveReply(Post $post)
+    protected function saveReply()
     {
         if (empty($this->data['target_url']))
             return null;
@@ -62,7 +54,7 @@ class PublishCreateService extends AbstractPublish
         
         $reply = Reply::create([
             'message'   => $this->data['reply_message'],
-            'post_id'   => $post->id,
+            'post_id'   => $this->post->id,
             'user_id'   => Auth::id(),
             'page_id'   => $this->page->id,
             'type'      => $this->extractReplyType(),

@@ -15,30 +15,18 @@ class PublishUpdateService extends AbstractPublish
      */
     protected $post;
     
+    /**
+     * Create a new page's publish updation service
+     * 
+     * @param array $data
+     * @param \App\Post $post
+     * @return void
+     */
     public function __construct($data, Post $post)
     {   
-        $page = $post->page;
-        parent::__construct($data, $page);
+        $this->page = $post->page;
         $this->post = $post;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function save()
-    {   
-        $data = $this->getPostInfo();
-        $data['user_id'] = Auth::user()->id;
-        $data['page_id'] = $this->page->id;
-        
-        $this->post->fill($data);
-        $this->post->save();
-
-        $this->post->scheduled_at_tz = $this->post->getScheduledAtTimezone($this->page->timezone);
-        $this->post->comment = $this->saveComment();
-        $this->post->reply = $this->saveReply();
-
-        return $this->post;
+        parent::__construct($data);
     }
 
     /**

@@ -9,6 +9,7 @@ $factory->define(Page::class, function (Faker $faker) {
     return [
         'fb_id' => $faker->unique()->randomNumber(9),
         'name'  => $faker->company,
-        'timezone' => 'America/Chicago'
+        'timezone' => 'America/Chicago',
+        'access_token' => 'access-token-string'
     ];
 });

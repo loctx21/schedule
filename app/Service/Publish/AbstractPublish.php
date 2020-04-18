@@ -3,16 +3,25 @@
 namespace App\Service\Publish;
 
 use App\Helper\Utils;
+use App\Jobs\SchedulePost;
 use App\Page;
 use App\Post;
 use App\Reply;
 use Carbon\Carbon;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 abstract class AbstractPublish
 {
+    /**
+     * Post to updated
+     * 
+     * @var \App\Post;
+     */
+    protected $post;
+
     /**
      * The validated data from request
      * 
@@ -31,15 +40,13 @@ abstract class AbstractPublish
      * Create a new page's publish create or update service
      * 
      * @param array $data
-     * @param \App\Page $page
      * @return void
      */
-    public function __construct($data,  Page $page)    
+    public function __construct($data)    
     {
         $this->data = $data;
         if (array_key_exists("save_file", $data))
             $this->data["save_file"] = $data["save_file"] === "true" ? true : false;
-        $this->page = $page;
     }
 
     /**
@@ -47,7 +54,39 @@ abstract class AbstractPublish
      * 
      * @return \App\Post
      */
-    abstract public function save();
+    public function save()
+    {
+        $this->savePostInfo();
+
+        $this->saveComment();
+        $this->saveReply();
+
+        return $this->post;
+    }
+
+    /**
+     * Save and return post related comment
+     * 
+     * @return \App\Comment|null
+     */
+    abstract protected function saveComment();
+
+    /**
+     * Save and return post related conversation reply
+     * 
+     * @return \App\Reply|null
+     */
+    abstract protected function saveReply();
+
+    public function process()
+    {
+        $post = $this->save();
+
+        if ($this->data['post_mode'] == 'now')
+            SchedulePost::dispatch($post->id);
+
+        return $post;
+    }
 
     /**
      * Get post information from attribute data
@@ -58,7 +97,9 @@ abstract class AbstractPublish
     {
         $ret = [
             'message' => $this->data['message'],
-            'target_url' => array_key_exists('target_url', $this->data) ? $this->data['target_url'] : ''
+            'target_url' => array_key_exists('target_url', $this->data) ? $this->data['target_url'] : '',
+            'user_id' => Auth::user()->id,
+            'page_id' => $this->page->id
         ];
 
         switch ($this->data['post_type']) {
@@ -88,14 +129,33 @@ abstract class AbstractPublish
     }
 
     /**
+     * Save post information, update non fillable data
+     * 
+     * @return void
+     */
+    protected function savePostInfo()
+    {
+        $this->post->fill($this->getPostInfo());
+        if ($this->data['post_mode'] == 'now')
+            $this->post->status = Post::STATUS_PROCESSING;
+
+        $this->post->save();
+        $this->post = $this->post->fresh();
+        $this->post->scheduled_at_tz = $this->post->getScheduledAtTimezone($this->page->timezone);
+    }
+
+    /**
      * Get post schedule information
      * 
      * @return array
      */
     public function getPostScheduleInfo()
     {
-        if ($this->data['post_mode'] == 'now')
-            return ['scheduled_at' => Carbon::now()->format(Utils::DATETIMEFORMAT)];
+        if ($this->data['post_mode'] == 'now') {
+            return [
+                'scheduled_at' => Carbon::now()->format(Utils::DATETIMEFORMAT)
+            ];
+        }
         
         $time_hour = $this->data['time_hour'] >= 10 ?  $this->data['time_hour'] : "0" . $this->data['time_hour'];
         $time_minute = $this->data['time_minute'] >= 10 ?  $this->data['time_minute'] : "0" . $this->data['time_minute'];
@@ -188,13 +248,13 @@ abstract class AbstractPublish
             case 'photo':
                 $realName = Utils::getNextFileName($this->page->getImageDirPath(), $this->data['post_file']->getClientOriginalName());
                 $final_path = $this->page->getImageDirPath() . '/' .$realName;
-                Storage::putFile($final_path, $this->data['post_file']);
+                Storage::putFileAs($this->page->getImageDirPath(), $this->data['post_file'], $realName);
                 return $final_path;
 
             case 'video':
                 $realName = Utils::getNextFileName($this->page->getVideoDirPath(), $this->data['post_file']->getClientOriginalName());
                 $final_path = $this->page->getVideoDirPath() . '/' .$realName;
-                Storage::putFile($final_path, $this->data['post_file']);
+                Storage::putFileAs($this->page->getVideoDirPath(), $this->data['post_file'],  $realName);
                 return $final_path;
         }
 

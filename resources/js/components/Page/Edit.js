@@ -208,10 +208,11 @@ class EditPage extends Component {
         setSubmitting(true)
         updatePage(this.props.page.id, values)
             .then(resp => {
-                setSubmitting(false)
                 this.setState({
                     message : "Page's data saved successfully!"
                 })
+            }).finally(resp => {
+                setSubmitting(false)
             });
     }
 }
@@ -221,6 +222,7 @@ EditPage.propTypes = {
 }
 
 const PageSchema = Yup.object().shape({
+    timezone: Yup.string().required('Required').nullable(),
     conv_index: Yup.bool().required('Required'),
     def_fb_album_id: Yup.number().typeError('Default album id must be a number')
 })

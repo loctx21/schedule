@@ -60,19 +60,23 @@ class FbReplyPublishService {
         }
         
         $this->attempt += 1;
-        $ret = $this->fb->post($this->getFbEndPoint(), [
-            'message'   => $this->getMessage(),
-        ], $this->post->page->access_token);
-        
-        if ($ret->isError())
-        {
+
+        try {
+            $resp = $this->fb->post($this->getFbEndPoint(), [
+                'message'   => $this->getMessage(),
+            ], $this->post->page->access_token);
+            
+            if ($resp->isError())
+                throw new \Exception("Unexpected facebook error");
+
+        } catch (\Exception $e) {
             $pageFbService = new PageFacebookService();
             $pageFbService->refreshToken($this->post->page);
-            
+
             return $this->publish();
         }
 
-        $this->updateFbInfo($ret->getDecodedBody());
+        $this->updateFbInfo($resp->getDecodedBody());
          
         return $this->reply;
     }

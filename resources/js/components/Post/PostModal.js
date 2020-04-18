@@ -32,7 +32,7 @@ class PostModal extends Component {
                     onSubmit={this.handleSubmit}
                     initialValues={ values }
                 >
-                {({ errors, touched, values, setFieldValue }) => (
+                {({ errors, touched, values, setFieldValue, isSubmitting }) => (
                     <Form>
                         <ModalBody>
                             <Row>
@@ -54,7 +54,7 @@ class PostModal extends Component {
                         </ModalBody>
                         <ModalFooter>
                             <div className="text-right">
-                                <Button type="submit" color="primary">
+                                <Button type="submit" disabled={isSubmitting} color="primary">
                                     Add Post
                                 </Button>
                             </div>

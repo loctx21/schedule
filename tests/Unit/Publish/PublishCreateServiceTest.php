@@ -3,6 +3,7 @@
 namespace Tests\Unit\Publish;
 
 use App\Comment;
+use App\Jobs\SchedulePost;
 use App\Page;
 use App\Post;
 use App\Reply;
@@ -15,6 +16,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
+use Queue;
 
 class PublishCreateServiceTest extends TestCase
 {
@@ -27,8 +29,8 @@ class PublishCreateServiceTest extends TestCase
     public function testGetPublishNowPhotoPostFileInfo()
     {
         Storage::fake('local');
+        list($user, $page) = $this->addUserPage();
         $file = UploadedFile::fake()->image('image.png');
-        $page = factory(Page::class)->create();
 
         $data = [ 
             'message'  => 'test photo message',
@@ -52,7 +54,7 @@ class PublishCreateServiceTest extends TestCase
 
     public function testGetPublishLaterPhotoPostUrlInfo()
     {
-        $page = factory(Page::class)->create();
+        list($user, $page) = $this->addUserPage();
         
         $data = [ 
             'message'  => 'test photo message',
@@ -76,7 +78,7 @@ class PublishCreateServiceTest extends TestCase
 
     public function testGetPostNowInfo()
     {
-        $page = factory(Page::class)->create();
+        list($user, $page) = $this->addUserPage();
         $data = [ 
             'post_mode' => 'now'
         ];
@@ -90,8 +92,8 @@ class PublishCreateServiceTest extends TestCase
     public function testGetPublishNowVideoPostFileInfo()
     {
         Storage::fake('local');
+        list($user, $page) = $this->addUserPage();
         $file = UploadedFile::fake()->image('video.mp4');
-        $page = factory(Page::class)->create();
 
         $data = [ 
             'message'  => 'test video message',
@@ -115,7 +117,7 @@ class PublishCreateServiceTest extends TestCase
 
     public function testGetPublishNowVideoPostUrlInfo()
     {
-        $page = factory(Page::class)->create();
+        list($user, $page) = $this->addUserPage();
 
         $data = [ 
             'message'  => 'test video message',
@@ -158,8 +160,8 @@ class PublishCreateServiceTest extends TestCase
     public function testGetPhotoUpload()
     {
         Storage::fake('local');
+        list($user, $page) = $this->addUserPage();
         $file = UploadedFile::fake()->image('image.jpg');
-        $page = factory(Page::class)->create();
 
         $data = [ 
             'post_type' => 'photo',
@@ -177,8 +179,8 @@ class PublishCreateServiceTest extends TestCase
     public function testGetPhotoRemote()
     {
         Storage::fake('local');
+        list($user, $page) = $this->addUserPage();
         $file = UploadedFile::fake()->image('image.jpg');
-        $page = factory(Page::class)->create();
 
         $data = [ 
             'post_type' => 'photo',
@@ -195,7 +197,7 @@ class PublishCreateServiceTest extends TestCase
 
     public function testCreatePublishNowLinkInfo()
     {
-        $page = factory(Page::class)->create();
+        list($user, $page) = $this->addUserPage();
         
         $data = [ 
             'message'  => 'test photo message',
@@ -218,11 +220,8 @@ class PublishCreateServiceTest extends TestCase
     public function testCreatePublishNowPhotoPostFileNoCommenReplyInfo()
     {
         Storage::fake('local');
-        $user = factory(User::class)->create();
-        $this->actingAs($user);
-
+        list($user, $page) = $this->addUserPage();
         $file = UploadedFile::fake()->image('image.png');
-        $page = factory(Page::class)->create();
 
         $data = [ 
             'message'  => 'test photo message',
@@ -240,6 +239,7 @@ class PublishCreateServiceTest extends TestCase
         $this->assertEquals($post->getOriginal('media_url'), "page/{$page->id}/photo/image.png");
         $this->assertEquals($post->user_id, $user->id);
         $this->assertEquals($post->page_id, $page->id);
+        $this->assertEquals($post->status, Post::STATUS_PROCESSING);
         
         $this->assertEquals($post->comment, null);
         $this->assertEquals($post->reply, null);
@@ -248,11 +248,8 @@ class PublishCreateServiceTest extends TestCase
     public function testCreatePublishNowPhotoPostFileWithCommenReplyInfo()
     {
         Storage::fake('local');
-        $user = factory(User::class)->create();
-        $this->actingAs($user);
-
+        list($user, $page) = $this->addUserPage();
         $file = UploadedFile::fake()->image('image.png');
-        $page = factory(Page::class)->create();
 
         $data = [ 
             'message'  => 'test photo message',
@@ -273,6 +270,7 @@ class PublishCreateServiceTest extends TestCase
         $this->assertEquals($post->getOriginal('media_url'), "page/{$page->id}/photo/image.png");
         $this->assertEquals($post->user_id, $user->id);
         $this->assertEquals($post->page_id, $page->id);
+        $this->assertEquals($post->status, Post::STATUS_PROCESSING);
 
         $this->assertEquals($post->comment->message, 'This is the comment');
         $this->assertEquals($post->comment->status, Comment::STATUS_NOT_PUBLISH);
@@ -286,4 +284,34 @@ class PublishCreateServiceTest extends TestCase
         $this->assertEquals($post->reply->post_id, $post->id);
         $this->assertEquals($post->reply->fb_target_id, 'Loc Nguyen');
     }
+
+    public function testPublishLinkNow()
+    {
+        Queue::fake();
+
+        list($user, $page) = $this->addUserPage();
+        
+        $data = [ 
+            'message'  => 'test photo message',
+            'post_type' => 'link',
+            'link' => 'http://www.facebook.com',
+            'post_mode' => 'now'
+        ];
+
+        $publishCreateService = new PublishCreateService($data, $page);
+        $post = $publishCreateService->process();
+
+        Queue::assertPushed(SchedulePost::class, 1);
+    }
+
+    public function addUserPage()
+    {
+        $user = factory(User::class)->create();
+        $this->actingAs($user);
+
+        $page = factory(Page::class)->create();
+
+        return [$user, $page];
+    }
+
 }

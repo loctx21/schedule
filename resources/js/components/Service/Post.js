@@ -175,7 +175,7 @@ function extractSubmitValue(values)
         if (values.asset_mode === 'url')
             keys = keys.concat(['media_url', 'save_file'])
         else
-            keys.push('media_file')
+            keys.push('post_file')
 
         if (values.post_type === 'video')
             keys.push('video_title')

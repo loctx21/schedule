@@ -19,8 +19,8 @@ class AddPost extends Migration
             $table->text('message');
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('page_id')->index();
-            $table->unsignedBigInteger('fb_id')->nullable()->index();
-            $table->unsignedBigInteger('fb_post_id')->nullable()->index();
+            $table->string('fb_id')->nullable();
+            $table->string('fb_post_id')->nullable();
             $table->unsignedBigInteger('fb_album_id')->nullable()->index();
             $table->tinyInteger('status')->default(Post::STATUS_NOT_PUBLISH);
             $table->string('media_url', 2083)->nullable();

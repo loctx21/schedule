@@ -18,13 +18,13 @@ class PostController extends Controller
     public function create(Page $page, CreatePublish $request)
     {
         $createPublishService = new PublishCreateService($request->all(), $page);
-        return response()->json($createPublishService->save());
+        return response()->json($createPublishService->process());
     }
 
-    public function edit(Post $post, UpdatePublish $request)
+    public function update(Post $post, UpdatePublish $request)
     {
         $createPublishService = new PublishUpdateService($request->all(), $post);
-        return response()->json($createPublishService->save());
+        return response()->json($createPublishService->process());
     }
 
     public function get(Page $page, Request $request)

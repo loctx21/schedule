@@ -28,7 +28,6 @@ class CreatePage extends FormRequest
         return [
             'name'  => 'required',
             'fb_id' => 'required|numeric',
-            'access_token' => 'required',
             'def_fb_album_id' => 'filled|numeric',
             'conv_index' => ['filled', Rule::in([Page::CONV_INDEX_ENABLED, Page::CONV_INDEX_DISABLED])]
         ];
