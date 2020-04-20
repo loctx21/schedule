@@ -20,18 +20,11 @@ class UpdateControl extends Component {
                 onSubmit={this.handleSubmit}
                 onClosed={this.handleClosed}
                 values={formatPostValue(page, post)}
-                scheduleOption={this.getScheduleOption()}
+                page={page}
             />
         )
     }
-
-    getScheduleOption() {
-        return this.props.page.schedule_option.map(item => ({
-            h: parseInt(item.h),
-            m: parseInt(item.m)
-        }))
-    }
-
+    
     handleSubmit = (values) => {
         const { post } = this.props
         const ext_values = extractSubmitValue(values)

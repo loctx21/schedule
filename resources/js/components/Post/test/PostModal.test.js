@@ -3,12 +3,15 @@ import { render, cleanup, fireEvent, waitFor, act } from '@testing-library/react
 import '@testing-library/jest-dom/extend-expect'
 
 import PostModal from '../PostModal'
+
 import { formatPostValue } from '../../Service/Post'
+
 
 describe("Edit page form works correctly", () => {
     let page
     beforeEach(() => {
         page = {
+            access_token: 'access_token_string',
             schedule_option: [{h:7, m:0}, {h:19, m:30}]
         }
     })
@@ -20,7 +23,7 @@ describe("Edit page form works correctly", () => {
 
         const { queryByText, getByText, getByLabelText, getByPlaceholderText, getByTestId } = render(
             <PostModal 
-                scheduleOption={page.schedule_option}
+                page={page}
                 values={formatPostValue(page)}
                 onSubmit={submitHandler}
                 onClosed={pageCloseHandler}
@@ -65,16 +68,6 @@ describe("Edit page form works correctly", () => {
         expect(queryByText('Date schedule')).toBeFalsy()
         expect(queryByText('Time schedule')).toBeFalsy()
 
-        await act(async () => {
-            fireEvent.change(getByPlaceholderText('Target Url'), {target : {value : "https://business.facebook.com/dean.flattley/videos/667024427041257/"}})
-        })
-        expect(queryByText('Load content')).toBeTruthy()
-
-        await act(async () => {
-            fireEvent.click(getByText('Load content'))
-        })
-        expect(getByLabelText('Video title')).toBeTruthy()
-        
     })
 
     it('return the right information for photo post now', async () => {
@@ -84,7 +77,7 @@ describe("Edit page form works correctly", () => {
 
         const { queryByText, getByText, getByLabelText, getByPlaceholderText, getByTestId } = render(
             <PostModal 
-                scheduleOption={page.schedule_option}
+                page={page}
                 values={formatPostValue(page)}
                 onSubmit={submitHandler}
                 onClosed={pageCloseHandler}
@@ -133,7 +126,7 @@ describe("Edit page form works correctly", () => {
         
         const { queryByText, getByText, getByLabelText, getByTestId } = render(
             <PostModal 
-                scheduleOption={page.schedule_option}
+                page={page}
                 values={formatPostValue(page)}
                 onSubmit={submitHandler}
                 onClosed={pageCloseHandler}
@@ -186,7 +179,7 @@ describe("Edit page form works correctly", () => {
 
         const { queryByText, getByText, getByLabelText, getByTestId } = render(
             <PostModal 
-                scheduleOption={page.schedule_option}
+                page={page}
                 values={formatPostValue(page)}
                 onSubmit={submitHandler}
                 onClosed={pageCloseHandler}
@@ -245,7 +238,7 @@ describe("Edit page form works correctly", () => {
         
         const { getByText, getByLabelText, getByPlaceholderText, getByTestId } = render(
             <PostModal 
-                scheduleOption={page.schedule_option}
+                page={page}
                 values={formatPostValue(page)}
                 onSubmit={submitHandler}
                 onClosed={pageCloseHandler}

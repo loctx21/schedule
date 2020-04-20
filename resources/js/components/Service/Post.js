@@ -1,6 +1,7 @@
 
 import axios from 'axios'
 import moment from 'moment'
+import { api } from './Facebook'
 
 /**
  * Extract post type from link
@@ -189,4 +190,110 @@ function extractSubmitValue(values)
     return ret
 }
 
-export { extractSubmitValue, deletePost, getPagePost, getPostType, addPagePost, formatPostValue, updatePagePost }
+function getFbPostData(url, access_token) {
+    const type = getFbPostTypeFromUrl(url)
+    if (!type)
+        return Promise.resolve(null);
+
+    const fbEndPoint = getFbPostApiEndPoint(url)
+    switch (type) {
+        case 'post': 
+            return api(fbEndPoint, {
+                    fields : 'name,from,images',
+                    access_token : access_token
+                })
+                .then(resp => {
+                    if (resp.error !== undefined)
+                        return null
+
+                    return {
+                        message: resp.name,
+                        image : resp.images[0].source,
+                        from : (resp.from != undefined) ? resp.from.name : ''
+                    }
+                })
+        
+        case 'comment':
+            return api(fbEndPoint, {
+                    fields : 'from,message,attachment',
+                    access_token : access_token
+                })
+                .then(resp => {
+                    if (resp.error !== undefined)
+                        return null
+                    
+                    return {
+                        message : resp.message,
+                        image : resp.attachment.media.image.src,
+                        from : resp.from.name
+                    }
+                })
+        
+        case 'video':
+            return api(fbEndPoint, {
+                    fields : 'from,description',
+                    access_token : access_token
+                })
+                .then(resp => {
+                    if (resp.error !== undefined)
+                        return null
+                    
+                    return {
+                        message : resp.description,
+                        image : '',
+                        from : ''
+                    }
+                })
+                
+        default:
+            Promise.resolve(null);
+    }
+}
+
+function getFbPostApiEndPoint(url) {
+    const type = getFbPostTypeFromUrl(url)
+
+    if (!type)
+        return null
+    
+    let regex
+    switch (type) {
+        case 'post':
+            regex = /fbid=([0-9]+)/
+            return `/${url.match(regex)[1]}`
+
+        case 'comment':
+            regex   = /[0-9]+\/([0-9]+)/
+            if (url.indexOf('videos') != -1)
+                regex = /videos\/([0-9]+)/
+            const c_regex = /comment_id=([0-9]+)/;
+            const id      = url.match(regex)[1];
+            const comment_id = url.match(c_regex)[1];
+            return `/${id}_${comment_id}`
+
+        case 'video':
+            regex = /videos\/([0-9]+)/;
+            return `/${url.match(regex)[1]}`
+
+        default:
+            return null
+    }
+}
+
+function getFbPostTypeFromUrl(url) {
+    if (url.search('facebook.com') == -1)
+        return null;
+
+    if (url.search('comment_id') != -1)
+        return 'comment';
+
+    if (url.search('photo.php') != -1)
+        return 'post';
+
+    if (url.search('videos') != -1)
+        return 'video';
+
+    return null;
+}
+
+export { getFbPostApiEndPoint, getFbPostTypeFromUrl, getFbPostData , extractSubmitValue, deletePost, getPagePost, getPostType, addPagePost, formatPostValue, updatePagePost }

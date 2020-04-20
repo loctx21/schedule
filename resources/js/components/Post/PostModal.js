@@ -6,7 +6,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter, Col, Button,
 import * as Yup from 'yup'
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 
-import { getPostType, addPagePost } from '../Service/Post'
+import { getPostType, getFbPostData } from '../Service/Post'
 
 class PostModal extends Component {
     constructor(props) {
@@ -21,6 +21,7 @@ class PostModal extends Component {
 
     render() {
         const { values } = this.props
+        
         return (
             <Modal isOpen={this.state.modal} toggle={this.toggle} className=""
                 onClosed={() => this.props.onClosed()} size={"lg"} backdrop="static">
@@ -346,7 +347,6 @@ class PostModal extends Component {
             
         const hours = [...Array(24).keys()]
         const minutes = [...Array(12).keys()].map(item => item * 5)
-        const { scheduleOption } = this.props
 
         return (
             <FormGroup className="row">
@@ -371,7 +371,7 @@ class PostModal extends Component {
                             ))}
                         </Field>
                         {
-                            scheduleOption.map(item => (
+                            this.scheduleOption.map(item => (
                                 <a key={`${item.h}_${item.m}`} className="time-config" href="#"
                                     onClick={() => {setFieldValue("time_hour", item.h); setFieldValue("time_minute", item.m);}}
                                 >
@@ -390,7 +390,7 @@ class PostModal extends Component {
         )
     }
 
-    renderCommentReplyTarget(values, setFieldValue) {
+    renderCommentReplyTarget(values, setValues) {
         return (
             <React.Fragment>
                 <FormGroup className="row">
@@ -436,7 +436,7 @@ class PostModal extends Component {
                     { values.target_url &&
                     <Col sm={12} className="text-right">
                         <Button color="secondary" 
-                            onClick={() => this.setPostTypeHandler(values.target_url, setFieldValue)}>
+                            onClick={() => this.setPostTypeHandler(values.target_url, setValues)}>
                             Load content
                         </Button>
                     </Col>
@@ -448,7 +448,28 @@ class PostModal extends Component {
 
     setPostTypeHandler = (link, setFieldValue) => {
         const type = getPostType(link)
-        setFieldValue('post_type', type)
+        getFbPostData(link, this.props.page.access_token)
+            .then(resp => {
+                setFieldValue("message", resp.message)
+                setFieldValue("post_type", getPostType(link))
+
+                if (resp.image) {
+                    setFieldValue("asset_mode", "url")
+                    setFieldValue("media_url", resp.image)
+                }
+            
+                // setValues(prevValues => {
+                //     console.log(prevValues)
+                // })
+                // setValues(data)
+            })
+    }
+
+    get scheduleOption() {
+        return this.props.page.schedule_option.map(item => ({
+            h: parseInt(item.h),
+            m: parseInt(item.m)
+        }))
     }
 
     toggle = (e) => {
@@ -469,9 +490,9 @@ class PostModal extends Component {
 }
 
 PostModal.propTypes = {
-   onSubmit: PropTypes.func.isRequired,
-   onClosed: PropTypes.func.isRequired,
-   scheduleOption: PropTypes.arrayOf(PropTypes.object).isRequired
+    page: PropTypes.object.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    onClosed: PropTypes.func.isRequired
 }
 
 const PostSchema = Yup.object().shape({
