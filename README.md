@@ -13,7 +13,7 @@ It’s huge time consuming to do all these activities using tools provided by Fa
 
 ## Requirements
 1. php7+ for Laravel 5.8
-2. NodeJs and your Node package manager choice for ReactJs 16+
+2. Your Node package manager choice for ReactJs 16+
 3. Openssl for your local ssl (Facebook now only work with https)
 4. Facebook App (Please refer to Facebook document for setting up Facebook App)
 
