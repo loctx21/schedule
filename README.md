@@ -12,7 +12,7 @@ To be able to create an exciting, engaging community the moderator will need to 
 It’s huge time consuming to do all these activities using tools provided by Facebook when you receive over 50 pieces of content each day. This system was created as a tool to do all these activities semi-automatically.
 
 ## Requirements
-1. php7+ for Laravel 5.8
+1. PHP7+ for Laravel 5.8
 2. Your Node package manager choice for ReactJs 16+
 3. Openssl for your local ssl (Facebook now only work with https)
 4. Facebook App (Please refer to Facebook document for setting up Facebook App)
