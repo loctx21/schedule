@@ -76,8 +76,6 @@ class Post extends Model
         if (strpos($media_url, "://") !== false)
             return $media_url;
 
-        if (config('filesystems.default') == 'local')
-            return env('APP_URL') . Storage::url($media_url);
         return Storage::url($media_url);
     }
 
@@ -127,17 +125,23 @@ class Post extends Model
 
     public function getStatusTextAttribute()
     {
-        if (is_null($this->status))
+        if (is_null($this->status) || $this->status == "")
             return "";
         
-        return self::STATUS_TEXT[$this->status];
+        if (array_key_exists($this->status, self::STATUS_TEXT))
+            return self::STATUS_TEXT[$this->status];
+
+        return "";
     }
 
     public function getTypeTextAttribute()
     {
-        if (is_null($this->type))
+        if (is_null($this->type) || $this->type == "")
             return "";
         
-        return self::TYPE_TEXT[$this->type];
+        if (array_key_exists($this->type, self::TYPE_TEXT))
+            return self::TYPE_TEXT[$this->type];
+
+        return "";
     }
 }

@@ -44,6 +44,9 @@ abstract class AbstractPublish
      */
     public function __construct($data)    
     {
+        if (!array_key_exists('post_type', $data))
+            throw new \Exception('Invalid data');
+
         $this->data = $data;
         if (array_key_exists("save_file", $data))
             $this->data["save_file"] = $data["save_file"] === "true" ? true : false;
@@ -114,9 +117,6 @@ abstract class AbstractPublish
             case 'link':
                 $ret['type'] = Post::TYPE_LINK_ID;
                 $ret['link'] = $this->data['link'];
-                break;
-
-            default: 
                 break;
         }
 
@@ -261,75 +261,4 @@ abstract class AbstractPublish
         return "";
     }
 
-    /**
-     * Extract object id
-     * 
-     * @return Integer
-     */
-    public function extractReplyTargetId() {
-        if (!array_key_exists('target_url', $this->data))
-            return null;
-            
-        $url = $this->data['target_url'];
-        $comp = parse_url(trim($url));
-       
-        //If url is videos return video id
-        if (strpos($comp['path'], 'videos') !== false) {
-            $pathArr = explode('/', $comp['path']);
-            return $pathArr[3];
-        }
-        
-        //If url is message get the inbox id
-        if (array_key_exists('query', $comp) && strpos($comp['query'], 'selected_item_id') !== false)
-        {
-            parse_str($comp['query'], $queryArr);   
-            return $queryArr['selected_item_id']; 
-        }
-
-        //If thread return sender name just return it
-        if (!array_key_exists('query', $comp))
-            return trim($url);
-
-        parse_str($comp['query'], $arr);
-        if (strpos($url, 'comment_id') !== false) {
-            $pathArr = explode('/', $comp['path']);
-            return $pathArr[count($pathArr)-2] . '_' . $arr['comment_id'];
-        }
-
-        return $arr['fbid'];
-    }
-
-    /**
-     * Extract reply type from target url
-     * 
-     * @return Integer
-     */
-    public function extractReplyType() {
-        if (!array_key_exists('target_url', $this->data))
-            return Reply::TYPE_VISITOR_POST;
-            
-        $url = $this->data['target_url'];
-        $comp = parse_url(trim($url));
- 
-        //If url is videos return video type
-        if (strpos($comp['path'], 'videos') !== false) {
-            return Reply::TYPE_VIDEO;
-        }
-       
-        //If url is inbox url 
-         if (array_key_exists('query', $comp) 
-            && strpos($comp['query'], 'selected_item_id') !== false)
-            return  Reply::TYPE_MESSAGE;
-
-        //If thread return sender name just return type message. 
-        //This is incase we still need to go back to use sender name
-        if (!array_key_exists('query', $comp))
-            return Reply::TYPE_MESSAGE;
-        
-        parse_str($comp['query'], $arr);
-        
-        if (strpos($url, 'comment_id') !== false) 
-            return Reply::TYPE_PHOTO_COMMENT;
-        return Reply::TYPE_VISITOR_POST;
-    }
 }

@@ -55,6 +55,28 @@ class FacebookCallbackTest extends TestCase
         $response->assertSessionHas('error', "Facebook response exception");
     }
 
+    public function testHandleFacebookErrorReasonDescription()
+    {
+        $user = factory(User::class)->create();
+
+        $fbLoginHelperMock = Mockery::mock();
+
+        $fbLoginHelperMock->shouldReceive('getAccessToken')->andReturn(null);
+        $fbLoginHelperMock->shouldReceive('getError')->andReturn(true);
+        $fbLoginHelperMock->shouldReceive('getErrorReason')->andReturn("reason");
+        $fbLoginHelperMock->shouldReceive('getErrorDescription')->andReturn("description");
+
+        $fbMock = Mockery::mock('facebook');
+        $fbMock->shouldReceive('getRedirectLoginHelper')->andReturn($fbLoginHelperMock);
+        app()->instance('facebook', $fbMock);
+
+        $response = $this->actingAs($user)->get('/dashboard/fbcallback');
+        $response->assertStatus(302);
+        $response->assertRedirect('dashboard');
+        $response->assertSessionHas('error', "reason - description");
+    
+    }
+
     public function testHandleFacebookSDKException()
     {
         $user = factory(User::class)->create();

@@ -87,8 +87,8 @@ class FbCommentPublishService {
      */
     public function updateFbInfo($decodeBody)
     {
-        $this->status       = Comment::STATUS_PUBLISHED;
-        $this->published_at = Carbon::now()->toDateTimeString();
+        $this->comment->status       = Comment::STATUS_PUBLISHED;
+        $this->comment->published_at = Carbon::now()->toDateTimeString();
         
         $this->comment->save();
     }

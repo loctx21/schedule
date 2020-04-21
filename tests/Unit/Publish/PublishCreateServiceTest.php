@@ -80,7 +80,8 @@ class PublishCreateServiceTest extends TestCase
     {
         list($user, $page) = $this->addUserPage();
         $data = [ 
-            'post_mode' => 'now'
+            'post_mode' => 'now',
+            'post_type' => 'link'
         ];
 
         $publishCreateService = new PublishCreateService($data, $page);
@@ -143,6 +144,7 @@ class PublishCreateServiceTest extends TestCase
     {
         $page = factory(Page::class)->create();
         $data = [ 
+            'post_type' => 'link',
             'post_mode' => 'schedule',
             'date' => '2020-04-13',
             'time_hour' => 10,
@@ -285,6 +287,38 @@ class PublishCreateServiceTest extends TestCase
         $this->assertEquals($post->reply->fb_target_id, 'Loc Nguyen');
     }
 
+    public function testGePostLinkFile()
+    {
+        Storage::fake('local');
+        list($user, $page) = $this->addUserPage();
+
+        $data = [ 
+            'post_type' => 'link'
+        ];
+
+        $publishCreateService = new PublishCreateService($data, $page);
+        $path = $publishCreateService->getFileUpload();
+
+        $this->assertEquals($path, "");
+    }
+
+    public function testGetRemoteNoneSaveFile()
+    {
+        list($user, $page) = $this->addUserPage();
+
+        $data = [ 
+            'message'  => 'test photo message',
+            'post_type' => 'photo',
+            'media_url' => 'http://www.facebook.com/image.png',
+            'save_file' => "false"
+        ];
+
+        $publishCreateService = new PublishCreateService($data, $page);
+        $path = $publishCreateService->getRemoteFile();
+
+        $this->assertEquals($data['media_url'], $path);
+    }
+
     public function testPublishLinkNow()
     {
         Queue::fake();
@@ -302,6 +336,55 @@ class PublishCreateServiceTest extends TestCase
         $post = $publishCreateService->process();
 
         Queue::assertPushed(SchedulePost::class, 1);
+    }
+
+    public function testGetPostNoneTypeInfo()
+    {
+        list($user, $page) = $this->addUserPage();
+        $data = [ 
+            'message'  => 'test photo message',
+            'target_url' => 'Loc Nguyen'
+        ];
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Invalid data");
+
+        $publishCreateService = new PublishCreateService($data, $page);
+        $info = $publishCreateService->getPostInfo();
+    }
+
+    public function testGetInvalidScheduleInfo()
+    {
+        list($user, $page) = $this->addUserPage();
+        $data = [ 
+            'post_type' => 'link',
+            'message'  => 'test photo message',
+            'target_url' => 'Loc Nguyen',
+            'post_mode' => 'schedule',
+            'date'  => '2800-asd-re',
+            'time_hour' => 0,
+            'time_minute' => 0
+        ];
+
+        $publishCreateService = new PublishCreateService($data, $page);
+        $info = $publishCreateService->getPostScheduleInfo();
+
+        $this->assertEquals([], $info);
+    }
+
+    public function testGetNoneAssetModeMediaInfo()
+    {
+        list($user, $page) = $this->addUserPage();
+        $data = [ 
+            'post_type' => 'link',
+            'message'  => 'test photo message',
+            'target_url' => 'Loc Nguyen'
+        ];
+
+        $publishCreateService = new PublishCreateService($data, $page);
+        $info = $publishCreateService->getPostMediaInfo();
+
+        $this->assertEquals([], $info);
     }
 
     public function addUserPage()

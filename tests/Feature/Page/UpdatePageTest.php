@@ -33,7 +33,7 @@ class UpdatePageTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function testEditInvaliedPageInfo()
+    public function testEditInvalidPageInfo()
     {
         $user = factory(User::class)->create();
         Passport::actingAs($user, ['*']);
@@ -53,7 +53,7 @@ class UpdatePageTest extends TestCase
             'schedule_time', 'timezone']);
     }
 
-    public function testEditValiedPageInfo()
+    public function testEditValidPageInfo()
     {
         $user = factory(User::class)->create();
         Passport::actingAs($user, ['*']);

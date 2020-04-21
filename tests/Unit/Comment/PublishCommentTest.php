@@ -7,6 +7,7 @@ use App\Page;
 use App\Post;
 use App\Service\Comment\FbCommentPublishService;
 use App\User;
+use Carbon\Carbon;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,6 +64,28 @@ class PublishCommentTest extends TestCase
 
         $this->assertEquals($fbCommentPublishService->attempt, 2);
         $this->assertEquals($comment->status, Comment::STATUS_PUBLISH_FAILED);
+    }
+
+    public function testPublishSuccess()
+    {
+        list($user, $page, $post, $comment) = $this->addUserPagePostComment();
+
+        $fbResponseMock = Mockery::mock();
+        $fbResponseMock->shouldReceive('isError')->andReturn(false);
+        $fbResponseMock->shouldReceive('getDecodedBody')->andReturn([
+        ]);
+
+        $fbMock = Mockery::mock();
+        $fbMock->shouldReceive('post')->andReturn($fbResponseMock);
+        $fbMock->shouldReceive('get')->andReturn($fbResponseMock);
+        app()->instance('facebook', $fbMock);
+
+        $fbCommentPublishService = new FbCommentPublishService($post, $comment);
+        $fbCommentPublishService->publish();
+
+        $this->assertEquals(1, $fbCommentPublishService->attempt);
+        $this->assertEquals(Comment::STATUS_PUBLISHED, $comment->status);
+        $this->assertEquals(Carbon::now()->toDateTimeString(), $comment->published_at);
     }
 
 

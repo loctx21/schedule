@@ -56,7 +56,7 @@ class SchedulePost implements ShouldQueue
 
         $reply = $post->replies()->first();
         if ($reply) {
-            $fbReplyPublishService = new FbReplyPublishService($post, $comment);
+            $fbReplyPublishService = new FbReplyPublishService($post, $reply);
             $fbReplyPublishService->publish();
         }
     }

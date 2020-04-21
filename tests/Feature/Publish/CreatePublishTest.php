@@ -32,7 +32,7 @@ class CreatePublishTest extends TestCase
         $response->assertJsonValidationErrors(['message', 'post_type', 'post_mode']);
     }
 
-    public function testInvaledMainInput()
+    public function testInvalidMainInput()
     {
         list($user, $page) = $this->addPageUser();
 
@@ -50,7 +50,7 @@ class CreatePublishTest extends TestCase
         ]);
     }
 
-    public function testInvaledVideoInput()
+    public function testInvalidVideoInput()
     {
         list($user, $page) = $this->addPageUser();
 
@@ -68,7 +68,7 @@ class CreatePublishTest extends TestCase
         ]);
     }
 
-    public function testInvaledTimePostInput()
+    public function testInvalidTimePostInput()
     {
         list($user, $page) = $this->addPageUser();
 
@@ -87,7 +87,7 @@ class CreatePublishTest extends TestCase
         ]);
     }
 
-    public function testInvaledLinkPostInput()
+    public function testInvalidLinkPostInput()
     {
         list($user, $page) = $this->addPageUser();
 
@@ -103,7 +103,7 @@ class CreatePublishTest extends TestCase
         ]);
     }
 
-    public function testInvaledPhotoPostInput()
+    public function testInvalidPhotoPostInput()
     {
         list($user, $page) = $this->addPageUser();
 
@@ -123,7 +123,7 @@ class CreatePublishTest extends TestCase
         ]);
     }
 
-    public function testSavePublisLinkSuccessfully()
+    public function testSavePublishLinkSuccess()
     {
         list($user, $page) = $this->addPageUser();
         

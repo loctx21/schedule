@@ -3,6 +3,7 @@
 namespace App\Service\Publish;
 
 use App\Comment;
+use App\Helper\Utils;
 use App\Post;
 use App\Reply;
 use Illuminate\Support\Facades\Auth;
@@ -79,8 +80,8 @@ class PublishUpdateService extends AbstractPublish
             'post_id'   => $this->post->id,
             'user_id'   => Auth::id(),
             'page_id'   => $this->page->id,
-            'type'      => $this->extractReplyType(),
-            'fb_target_id' => $this->extractReplyTargetId()
+            'type'      => Reply::extractReplyType($this->post->target_url),
+            'fb_target_id' => Reply::extractReplyTargetId($this->post->target_url)
         ]);
         $reply->save();
 

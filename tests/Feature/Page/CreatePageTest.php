@@ -8,6 +8,7 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\Passport;
+use Mockery;
 
 class CreatePageTest extends TestCase
 {
@@ -72,13 +73,22 @@ class CreatePageTest extends TestCase
         $user = factory(User::class)->create();
         Passport::actingAs($user, ['*']);
 
+        $fbResponseMock = Mockery::mock();
+        $fbResponseMock->shouldReceive('getDecodedBody')->andReturn([
+            'access_token' => 'access_token_string'
+        ]);
+
+        $fbMock = Mockery::mock('facebook');
+        $fbMock->shouldReceive('get')->andReturn($fbResponseMock);
+        app()->instance('facebook', $fbMock);
+
         $data =  [
             'name'  => 'test',
             'access_token' => 'adasdadad',
             'fb_id' => $this->getUniqueFbId()
         ];
         $response = $this->json('POST', '/api/page', $data);
-
+       
         $response->assertStatus(200);
         $this->assertDatabaseHas('pages', [
             'fb_id' => $data['fb_id'],

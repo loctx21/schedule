@@ -49,7 +49,7 @@ class PublishPostTest extends TestCase
         
         $this->assertEquals([
             'caption' => $post->message,
-            'url'   => env('APP_URL') . "/storage/page/{$page->id}/photo/image.png"
+            'url'   => "/storage/page/{$page->id}/photo/image.png"
         ], $resp);
     }
 

@@ -8,6 +8,9 @@
 
 namespace App\Helper;
 
+use App\Reply;
+use Illuminate\Support\Facades\Storage;
+
 class Utils {
     const DATETIMEFORMAT = 'Y-m-d H:i:s';
     const DATENAMETIMEFORMAT = 'D Y-m-d H:i:s';
@@ -27,7 +30,7 @@ class Utils {
        
 		$newFileNamePath = pathinfo($newName);
 
-        while (file_exists($path . '/' . $newName)) {
+        while (Storage::exists($path . '/' . $newName)) {
             $newName = $newFileNamePath['filename'] . "_" . $i . "." . $fileInfo["extension"];
             $i++;
         }
@@ -69,45 +72,4 @@ class Utils {
         }
         return $zones_array;
     }
-    
-    /**
-     * 
-     * @param Post $post
-     */
-    static function getPostImgUrl($post) {
-        $fileInfo = pathinfo($post->media_url);
-		if (empty($post->media_url))
-			return '';
-        if ($fileInfo['dirname'] != '.')
-            return $post->media_url;
-        else {
-            return env('APP_URL') . env('STATIC_FOLDER') . '/' . $post->page_id . '/' . $post->media_url;
-        }
-    }
-
-    /**
-     * Get video url either from remote or local file
-     * @param Post $post
-     */
-    static function getPostVideoUrl($post) {
-        $fileInfo = pathinfo($post->media_url);
-		if (empty($post->media_url))
-			return '';
-        if ($fileInfo['dirname'] != '.')
-            return $post->media_url;
-        else {
-            return env('APP_URL') . env('STATIC_FOLDER') . '/' . env('STATIC_VIDEO') . $post->page_id . '/' . $post->media_url;
-        }
-    }
-
-    static function getPageVideoDirPath($page_id) {
-        return public_path('/' . env('STATIC_FOLDER') . '/' . env('STATIC_VIDEO') . $page_id);
-    }
-
-    static function getPageImageDirPath($page_id) {
-        return public_path('/' . env('STATIC_FOLDER') . '/' . $page_id);
-
-    }
-
-
 }

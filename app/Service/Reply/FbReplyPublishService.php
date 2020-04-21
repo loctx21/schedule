@@ -128,10 +128,7 @@ class FbReplyPublishService {
                 break;
             
             case Reply::TYPE_MESSAGE;
-                $endPoint .= $this->getConversionId()  . '/messages';
-                break;
-            
-            default :
+                $endPoint .= $this->getConversationId()  . '/messages';
                 break;
         }
         
@@ -143,7 +140,7 @@ class FbReplyPublishService {
      * 
      * @return string
      */
-    public function getConversionId() {
+    public function getConversationId() {
         $col = (preg_match('/^[0-9]*$/', $this->reply->fb_target_id)) ? 'fb_thread_key' : 'fb_sender_name';
         
         //Assume a thread had been indexed with system

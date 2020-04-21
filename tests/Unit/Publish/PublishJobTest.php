@@ -19,11 +19,17 @@ class PublishJobTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * A basic unit test example.
-     *
-     * @return void
-     */
+    public function testScheduleNoneValidPost()
+    {
+        Queue::fake();
+        list($user, $page) = $this->addUserPage();
+
+        $service = new PublishJobCreationService();
+        $service->schedule();
+
+        Queue::assertPushed(SchedulePost::class, 0);
+    }
+
     public function testScheduleEnoughJob()
     {
         Queue::fake();
