@@ -44,7 +44,7 @@ function getScript() {
  */
 function getLoginStatus() {
     return new Promise(async (resolve) => {
-        const FB = await getScript()
+        const FB = await lib.getScript()
 
         FB.getLoginStatus((resp) => {
             resolve(resp)
@@ -61,7 +61,7 @@ function getLoginStatus() {
  */
 function api(...params) {
     return new Promise(async (resolve) => {
-        const FB = await getScript()
+        const FB = await lib.getScript()
 
         const callback = (resp) => {
             resolve(resp)
@@ -76,6 +76,11 @@ function api(...params) {
     })
 }
 
+//Trick to overwrite getScript in test
+const lib = {
+    getScript
+}
+
 export {
-    getLoginStatus, api
+    getScript, getLoginStatus, api, lib
 }

@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom/extend-expect'
 
 import { formatPostValue, extractSubmitValue, getFbPostData, getFbPostTypeFromUrl, getFbPostApiEndPoint } from '../Post'
-import { api } from '../Facebook'
+
 jest.mock('../Facebook')
+import { api } from '../Facebook'
 
 it("format none post values correctly", () => {
     const page = {

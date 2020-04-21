@@ -457,11 +457,6 @@ class PostModal extends Component {
                     setFieldValue("asset_mode", "url")
                     setFieldValue("media_url", resp.image)
                 }
-            
-                // setValues(prevValues => {
-                //     console.log(prevValues)
-                // })
-                // setValues(data)
             })
     }
 
