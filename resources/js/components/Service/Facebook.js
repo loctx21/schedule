@@ -44,7 +44,11 @@ function getScript() {
  */
 function getLoginStatus() {
     return new Promise(async (resolve) => {
+<<<<<<< HEAD
         const FB = await lib.getScript()
+=======
+        const FB = await getScript()
+>>>>>>> 502eb4b7d2758db2d2197c356defc6f8ee4cafea
 
         FB.getLoginStatus((resp) => {
             resolve(resp)
@@ -61,7 +65,11 @@ function getLoginStatus() {
  */
 function api(...params) {
     return new Promise(async (resolve) => {
+<<<<<<< HEAD
         const FB = await lib.getScript()
+=======
+        const FB = await getScript()
+>>>>>>> 502eb4b7d2758db2d2197c356defc6f8ee4cafea
 
         const callback = (resp) => {
             resolve(resp)
