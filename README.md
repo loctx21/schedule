@@ -21,7 +21,29 @@ It’s huge time consuming to do all these activities using tools provided by Fa
 1. Pull the code to your system
 2. Run ``composer install``
 3. Run ``npm install``
+4. Run normal Laravel setup
+    - Key generate
+    - Create .env
 4. Run ``npm run watch`` to develop or ``npm run prod`` for preparing code for production
+5. Configure https for your localhost
+6. Configure Facebook App
+
+## How to install with Docker
+1. Insall Docker
+2. Run composer install either by docker-composer image or your global composer
+3. Create and self signed your own ssl certificate
+4. Use ``nginx/conf.d/app.conf.example`` to create ``nginx/conf.d/app.conf`` with your information
+5. Run ``docker-compose up -d`` to build the image and start container
+6. Create your own database user and table on your ``db`` container
+8. Configure your Facebook App information
+9. Run normal Laravel setup on your ``app`` container
+    - Key generate
+    - Create .env
+
+## Configuration you need to update in .env
+- Facebook App Secret and ID
+- Database (Use db for DB_HOST if you run with Docker)
+- Other Laravel configuration
 
 ## Note
 - ReactJs was setup using ``Laravel Mix``. 
