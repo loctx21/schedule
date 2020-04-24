@@ -10,3 +10,7 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+/coverage
+/test-coverage
+/nginx/conf.d/app.conf
+.env.testing
