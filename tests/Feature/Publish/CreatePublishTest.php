@@ -3,15 +3,22 @@
 namespace Tests\Feature\Publish;
 
 use App\Page;
+use App\Post;
 use App\User;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Laravel\Passport\Passport;
+use Mockery;
 
 class CreatePublishTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Mockery::close();
+    }
+
     public function testUnAuthorizedUser()
     {
         $response = $this->post("/api/page/1/post");
@@ -123,7 +130,7 @@ class CreatePublishTest extends TestCase
         ]);
     }
 
-    public function testSavePublishLinkSuccess()
+    public function testSavePublishLinkScheduledSuccess()
     {
         list($user, $page) = $this->addPageUser();
         
@@ -148,6 +155,43 @@ class CreatePublishTest extends TestCase
         $response->assertJsonFragment([
             "message" => "This is the link post",
             "scheduled_at" => "2020-04-24 12:00:00"
+        ]);
+    }
+
+    public function testSavePublishLinkNowSuccess()
+    {
+        list($user, $page) = $this->addPageUser();
+        
+        $fbResponseMock = Mockery::mock();
+        $fbResponseMock->shouldReceive('isError')->andReturn(false);
+        $ret = [
+            'id' => 12345,
+            'post_id' => 123457
+        ];
+        $fbResponseMock->shouldReceive('getDecodedBody')->andReturn($ret);
+
+        $fbMock = Mockery::mock();
+        $fbMock->shouldReceive('post')->andReturn($fbResponseMock);
+        app()->instance('facebook', $fbMock);
+
+        $response = $this->json('POST', "/api/page/{$page->id}/post", [
+            "post_type" => "link",
+            "asset_mode" => "url",
+            "message" => "This is the link post",
+            "media_url" =>"",
+            "save_file" => false,
+            "post_mode" => "now",
+            "comment" => "test post reply  {{link}}",
+            "reply_message" => "test message {{link}}",
+            "target_url" => "",
+            "video_title" => "",
+            "link" => "https://schedule.themesjuice.com/posts/1"
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonFragment([
+            "message" => "This is the link post",
+            "status" => Post::STATUS_PUBLISHED
         ]);
     }
 

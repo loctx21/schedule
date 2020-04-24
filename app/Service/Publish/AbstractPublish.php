@@ -85,8 +85,12 @@ abstract class AbstractPublish
     {
         $post = $this->save();
 
-        if ($this->data['post_mode'] == 'now')
+        if ($this->data['post_mode'] == 'now') {
             SchedulePost::dispatch($post->id);
+
+            if (config('queue.default') == "sync")
+                $post = $post->fresh();
+        }
 
         return $post;
     }
